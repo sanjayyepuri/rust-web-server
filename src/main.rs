@@ -1,7 +1,9 @@
 use std::fs;
+use std::thread;
 use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
+use std::time::Duration;
 
 fn main() {
     // open up a TcpListener
@@ -24,10 +26,13 @@ fn handle_connection(mut stream: TcpStream) {
     // http server is dumb and doesn't do anything with it
     let mut buffer = [0; 1024];
     stream.read(&mut buffer).unwrap();
-
+    println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
 
     // read an html file to respond with
     let contents = fs::read_to_string("hello.html").unwrap();
+
+    // lets pretend we have a slow connection
+    thread::sleep(Duration::from_secs(3));
 
     // build the HTTP response
     let response = format!(
@@ -40,5 +45,4 @@ fn handle_connection(mut stream: TcpStream) {
     stream.write(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 
-    println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
 }
